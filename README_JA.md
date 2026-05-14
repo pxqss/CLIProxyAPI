@@ -1,5 +1,34 @@
 # CLI Proxy API
 
+## Fork Notice / フォーク版の説明
+
+このリポジトリは CLIProxyAPI の fork であり、公式上流版ではありません。元プロジェクトの attribution、license、upstream 関連情報は、上流 README を基に整理した下記の内容に引き続き保持されています。
+
+このブランチでは、Gemini CLI の `-search` 仮想モデル機能を追加しています。Gemini CLI モデルが利用可能な場合、`/v1/models` は対応する `-search` バリアントを自動的に公開するため、NewAPI は CPA からこれらのモデルを手動追加なしで同期できます。
+
+クライアントが `gemini-xxx-search` をリクエストすると、CPA は上流へ送信する前に実際のベースモデル名 `gemini-xxx` に戻し、Gemini CLI / Code Assist の上流リクエスト本文へ Gemini 組み込みの `googleSearch` ツール宣言を注入します。検索は上流の Gemini / Code Assist サービス側で実行されます。CPA はローカル search tool loop を実装せず、`googleSearch` を OpenAI `tool_calls` として公開しません。
+
+この機能はデフォルトで有効です。無効化するには次を設定してください。
+
+```yaml
+disable-gemini-search-models: true
+```
+
+制限事項:
+
+- `-search` モデルバリアントを自動生成するのは `gemini-cli` provider のみです。
+- Claude、Codex、Qwen、OpenCode、Antigravity など他の provider では `-search` バリアントを生成しません。
+- search の実際の挙動は、上流の Gemini / Code Assist が `googleSearch` ツール宣言を受け入れるかどうかに依存します。
+- 実際の Web 検索は、デプロイ後に有効な Gemini CLI auth で検証する必要があります。
+
+詳細は [Gemini CLI Search Models](docs/gemini-search-models_JA.md) を参照してください。
+
+---
+
+## 以下は上流 CLIProxyAPI README を基に整理した説明です
+
+以下の内容は CLIProxyAPI 上流 README を基に整理したものであり、一部の内容は upstream の更新に伴って変わる可能性があります。
+
 [English](README.md) | [中文](README_CN.md) | 日本語
 
 CLI向けのOpenAI/Gemini/Claude/Codex互換APIインターフェースを提供するプロキシサーバーです。
@@ -7,35 +36,6 @@ CLI向けのOpenAI/Gemini/Claude/Codex互換APIインターフェースを提供
 OAuth経由でOpenAI Codex（GPTモデル）およびClaude Codeもサポートしています。
 
 ローカルまたはマルチアカウントのCLIアクセスを、OpenAI（Responses含む）/Gemini/Claude互換のクライアントやSDKで利用できます。
-
-## スポンサー
-
-[![https://www.packyapi.com/register?aff=cliproxyapi](./assets/packycode-en.png)](https://www.packyapi.com/register?aff=cliproxyapi)
-
-PackyCodeのスポンサーシップに感謝します！
-
-PackyCodeは信頼性が高く効率的なAPIリレーサービスプロバイダーで、Claude Code、Codex、Geminiなどのリレーサービスを提供しています。
-
-PackyCodeは当ソフトウェアのユーザーに特別割引を提供しています：<a href="https://www.packyapi.com/register?aff=cliproxyapi">こちらのリンク</a>から登録し、チャージ時にプロモーションコード「cliproxyapi」を入力すると10%割引になります。
-
----
-
-<table>
-<tbody>
-<tr>
-<td width="180"><a href="https://www.aicodemirror.com/register?invitecode=TJNAIF"><img src="./assets/aicodemirror.png" alt="AICodeMirror" width="150"></a></td>
-<td>AICodeMirrorのスポンサーシップに感謝します！AICodeMirrorはClaude Code / Codex / Gemini CLI向けの公式高安定性リレーサービスを提供しており、エンタープライズグレードの同時接続、迅速な請求書発行、24時間365日の専任技術サポートを備えています。Claude Code / Codex / Geminiの公式チャネルが元の価格の38% / 2% / 9%で利用でき、チャージ時にはさらに割引があります！CLIProxyAPIユーザー向けの特別特典：<a href="https://www.aicodemirror.com/register?invitecode=TJNAIF">こちらのリンク</a>から登録すると、初回チャージが20%割引になり、エンタープライズのお客様は最大25%割引を受けられます！</td>
-</tr>
-<tr>
-<td width="180"><a href="https://shop.bmoplus.com/?utm_source=github"><img src="./assets/bmoplus.png" alt="BmoPlus" width="150"></a></td>
-<td>本プロジェクトにご支援いただいた BmoPlus に感謝いたします！BmoPlusは、AIサブスクリプションのヘビーユーザー向けに特化した信頼性の高いAIアカウントサービスプロバイダーであり、安定した ChatGPT Plus / ChatGPT Pro (完全保証) / Claude Pro / Super Grok / Gemini Pro の公式代行チャージおよび即納アカウントを提供しています。こちらの<a href="https://shop.bmoplus.com/?utm_source=github">BmoPlus AIアカウント専門店/代行チャージ</a>経由でご登録・ご注文いただいたユーザー様は、GPTを <b>公式サイト価格の約1割（90% OFF）</b> という驚異的な価格でご利用いただけます！</td>
-</tr>
-<tr>
-<td width="180"><a href="https://coder.visioncoder.cn"><img src="./assets/visioncoder.png" alt="VisionCoder" width="150"></a></td>
-<td>VisionCoderのご支援に感謝します！<a href="https://coder.visioncoder.cn">VisionCoder 開発プラットフォーム</a> は、信頼性が高く効率的なAPIリレーサービスプロバイダーで、Claude Code、Codex、Geminiなどの主要AIモデルを提供し、開発者やチームがより簡単にAI機能を統合して生産性を向上できるよう支援します。さらに、VisionCoderはユーザー向けに <a href="https://coder.visioncoder.cn">Token Plan</a> の期間限定キャンペーン（1か月購入で1か月分プレゼント）も提供しています。</td>
-</tr>
-</tbody>
-</table>
 
 ## 概要
 

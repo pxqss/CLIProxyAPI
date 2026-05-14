@@ -1,6 +1,8 @@
-# CLI Proxy API
+# CLI プロキシ API
 
-## Fork Notice / フォーク版の説明
+[English](README.md) | [中文](README_CN.md) | 日本語
+
+## Fork Notice / フォークについて
 
 このリポジトリは CLIProxyAPI の fork であり、公式上流版ではありません。元プロジェクトの attribution、license、upstream 関連情報は、上流 README を基に整理した下記の内容に引き続き保持されています。
 
@@ -28,8 +30,6 @@ disable-gemini-search-models: true
 ## 以下は上流 CLIProxyAPI README を基に整理した説明です
 
 以下の内容は CLIProxyAPI 上流 README を基に整理したものであり、一部の内容は upstream の更新に伴って変わる可能性があります。
-
-[English](README.md) | [中文](README_CN.md) | 日本語
 
 CLI向けのOpenAI/Gemini/Claude/Codex互換APIインターフェースを提供するプロキシサーバーです。
 

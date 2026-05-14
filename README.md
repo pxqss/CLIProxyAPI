@@ -1,4 +1,6 @@
-# CLI Proxy API
+# CLIProxyAPI
+
+English | [中文](README_CN.md) | [日本語](README_JA.md)
 
 ## Fork Notice
 
@@ -28,8 +30,6 @@ See [Gemini CLI Search Models](docs/gemini-search-models.md) for detailed usage 
 ## Notes organized from the upstream CLIProxyAPI README
 
 The following content is organized based on the upstream CLIProxyAPI README. Some content may change as upstream updates.
-
-English | [中文](README_CN.md) | [日本語](README_JA.md)
 
 A proxy server that provides OpenAI/Gemini/Claude/Codex compatible API interfaces for CLI.
 

@@ -1,0 +1,47 @@
+name: Sync upstream
+
+on:
+  schedule:
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-upstream
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout fork
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure git author
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Add upstream remote
+        run: |
+          git remote add upstream https://github.com/router-for-me/CLIProxyAPI.git || true
+          git fetch origin --prune
+          git fetch upstream --prune
+
+      - name: Fast-forward main from upstream
+        run: |
+          git checkout -B main origin/main
+          git merge --ff-only upstream/main
+          git push origin main
+
+      - name: Rebase feature branch on updated main
+        run: |
+          git checkout -B feature/gcli-search origin/feature/gcli-search
+          git rebase main
+          git push --force-with-lease origin feature/gcli-search

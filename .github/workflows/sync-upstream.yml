@@ -42,6 +42,6 @@ jobs:
 
       - name: Rebase feature branch on updated main
         run: |
-          git checkout -B feature/gcli-search origin/feature/gcli-search
+          git checkout -B feature/search-enhancements origin/feature/search-enhancements
           git rebase main
-          git push --force-with-lease origin feature/gcli-search
+          git push --force-with-lease origin feature/search-enhancements

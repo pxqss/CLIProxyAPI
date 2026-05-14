@@ -6,7 +6,7 @@ English | [中文](README_CN.md) | [日本語](README_JA.md)
 
 This repository is a fork of CLIProxyAPI, not the official upstream release. The original project attribution, license, and upstream-related information are retained in the content below, organized based on the upstream README.
 
-This branch adds Gemini CLI `-search` virtual model support. When Gemini CLI models are available, `/v1/models` automatically exposes additional `-search` variants so NewAPI can pull them without manual model entry creation.
+This branch adds Gemini CLI `-search` virtual model support. When Gemini CLI models are available, `/v1/models` automatically exposes additional `-search` variants. Any client or gateway that can discover models from an OpenAI-compatible `/v1/models` endpoint can see these models without manual model entry creation.
 
 When a client requests a model such as `gemini-xxx-search`, CPA restores the upstream model name to `gemini-xxx` and injects Gemini's built-in `googleSearch` tool declaration into the Gemini CLI / Code Assist upstream request body. Search execution is handled by the upstream Gemini / Code Assist service. CPA does not implement a local search tool loop, and `googleSearch` is not exposed as OpenAI `tool_calls`.
 

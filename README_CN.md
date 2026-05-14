@@ -1,5 +1,7 @@
 # CLI 代理 API
 
+[English](README.md) | 中文 | [日本語](README_JA.md)
+
 ## Fork Notice / 分支说明
 
 本仓库是 CLIProxyAPI 的 fork，并非官方上游版本。原项目 attribution、license 和 upstream 相关信息仍保留在下方基于上游 README 整理的内容中。
@@ -28,8 +30,6 @@ disable-gemini-search-models: true
 ## 以下为基于上游 CLIProxyAPI README 整理的说明
 
 以下内容基于 CLIProxyAPI 上游 README 整理，部分内容可能随 upstream 更新而变化。
-
-[English](README.md) | 中文 | [日本語](README_JA.md)
 
 一个为 CLI 提供 OpenAI/Gemini/Claude/Codex 兼容 API 接口的代理服务器。
 

@@ -16,6 +16,7 @@ import (
 	"github.com/router-for-me/CLIProxyAPI/v7/internal/home"
 	"github.com/router-for-me/CLIProxyAPI/v7/internal/redisqueue"
 	"github.com/router-for-me/CLIProxyAPI/v7/internal/registry"
+	"github.com/router-for-me/CLIProxyAPI/v7/internal/runtime/codexsearch"
 	"github.com/router-for-me/CLIProxyAPI/v7/internal/runtime/executor"
 	"github.com/router-for-me/CLIProxyAPI/v7/internal/runtime/geminisearch"
 	"github.com/router-for-me/CLIProxyAPI/v7/internal/util"
@@ -1153,6 +1154,9 @@ func (s *Service) registerModelsForAuth(a *coreauth.Auth) {
 				excluded = entry.ExcludedModels
 			}
 		}
+		if s.cfg == nil || !s.cfg.DisableCodexSearchModels {
+			models = appendCodexSearchModels(models)
+		}
 		models = applyExcludedModels(models, excluded)
 	case "kimi":
 		models = registry.GetKimiModels()
@@ -1516,6 +1520,49 @@ func appendGeminiSearchModels(models []*ModelInfo) []*ModelInfo {
 		clone.ID = searchID
 		if clone.DisplayName != "" {
 			clone.DisplayName = geminisearch.AppendSearchVariant(clone.DisplayName)
+		}
+		if clone.Name != "" {
+			clone.Name = rewriteModelInfoName(clone.Name, model.ID, searchID)
+		}
+		add(&clone)
+	}
+	return out
+}
+
+func appendCodexSearchModels(models []*ModelInfo) []*ModelInfo {
+	if len(models) == 0 {
+		return models
+	}
+	out := make([]*ModelInfo, 0, len(models)*2)
+	seen := make(map[string]struct{}, len(models)*2)
+	add := func(model *ModelInfo) {
+		if model == nil {
+			return
+		}
+		id := strings.TrimSpace(model.ID)
+		if id == "" {
+			return
+		}
+		key := strings.ToLower(id)
+		if _, ok := seen[key]; ok {
+			return
+		}
+		seen[key] = struct{}{}
+		out = append(out, model)
+	}
+	for _, model := range models {
+		add(model)
+		if model == nil {
+			continue
+		}
+		searchID := codexsearch.AppendSearchVariant(model.ID)
+		if strings.TrimSpace(searchID) == "" || strings.EqualFold(searchID, model.ID) {
+			continue
+		}
+		clone := *model
+		clone.ID = searchID
+		if clone.DisplayName != "" {
+			clone.DisplayName = codexsearch.AppendSearchVariant(clone.DisplayName)
 		}
 		if clone.Name != "" {
 			clone.Name = rewriteModelInfoName(clone.Name, model.ID, searchID)

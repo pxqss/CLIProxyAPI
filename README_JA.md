@@ -6,24 +6,27 @@
 
 このリポジトリは CLIProxyAPI の fork であり、公式上流版ではありません。元プロジェクトの attribution、license、upstream 関連情報は、上流 README を基に整理した下記の内容に引き続き保持されています。
 
-このブランチでは、Gemini CLI の `-search` 仮想モデル機能を追加しています。Gemini CLI モデルが利用可能な場合、`/v1/models` は対応する `-search` バリアントを自動的に公開します。OpenAI-compatible `/v1/models` からモデル一覧を取得できる任意のクライアントやゲートウェイで、これらのモデルを発見でき、手動でモデルを追加する必要はありません。
+このブランチでは Search Enhancements / 検索拡張を追加しています。Gemini CLI または Codex モデルが利用可能な場合、`/v1/models` は provider-scoped な `-search` バリアントを自動的に公開します。OpenAI-compatible `/v1/models` からモデル一覧を取得できる任意のクライアントやゲートウェイで、これらのモデルを発見でき、手動でモデルを追加する必要はありません。
 
-クライアントが `gemini-xxx-search` をリクエストすると、CPA は上流へ送信する前に実際のベースモデル名 `gemini-xxx` に戻し、Gemini CLI / Code Assist の上流リクエスト本文へ Gemini 組み込みの `googleSearch` ツール宣言を注入します。検索は上流の Gemini / Code Assist サービス側で実行されます。CPA はローカル search tool loop を実装せず、`googleSearch` を OpenAI `tool_calls` として公開しません。
+Gemini CLI `-search` モデルでは、`gemini-xxx-search` を上流送信前に `gemini-xxx` へ戻し、Gemini CLI / Code Assist リクエスト本文へ Gemini 組み込みの `googleSearch` ツール宣言を注入します。Codex `-search` モデルでは、`gpt-xxx-search` を上流送信前に `gpt-xxx` へ戻し、cached hosted `web_search` として `{"type":"web_search","external_web_access":false}` を注入します。検索は上流 provider サービス側で実行されます。CPA はローカル search tool loop を実装せず、`googleSearch` を OpenAI `tool_calls` として公開せず、Codex `web_search` をクライアント function tool に偽装しません。
 
-この機能はデフォルトで有効です。無効化するには次を設定してください。
+これらの機能はデフォルトで有効です。provider ごとに無効化するには次を設定してください。
 
 ```yaml
 disable-gemini-search-models: true
+disable-codex-search-models: true
 ```
 
 制限事項:
 
-- `-search` モデルバリアントを自動生成するのは `gemini-cli` provider のみです。
-- Claude、Codex、Qwen、OpenCode、Antigravity など他の provider では `-search` バリアントを生成しません。
-- search の実際の挙動は、上流の Gemini / Code Assist が `googleSearch` ツール宣言を受け入れるかどうかに依存します。
-- 実際の Web 検索は、デプロイ後に有効な Gemini CLI auth で検証する必要があります。
+- Gemini search は `gemini-cli` provider のみに適用されます。
+- Codex search は Codex provider のみに適用されます。
+- その他の provider では `-search` バリアントを自動生成しません。
+- Codex search の初回版は cached search であり、live search ではありません。
+- 実際の検索挙動は上流サービスとアカウント能力に依存するため、デプロイ後の検証が必要です。
+- Chat Completions streaming では Codex の検索過程イベントが表示されない場合がありますが、最終テキストは既存の変換ロジックを維持する想定です。
 
-詳細は [Gemini CLI Search Models](docs/gemini-search-models_JA.md) を参照してください。
+詳細は [Search Enhancements / 検索拡張](docs/search-enhancements_JA.md) を参照してください。
 
 ---
 

@@ -26,6 +26,9 @@ type SDKConfig struct {
 	// DisableGeminiSearchModels turns off Gemini CLI -search virtual models and googleSearch injection.
 	DisableGeminiSearchModels bool `yaml:"disable-gemini-search-models" json:"disable-gemini-search-models"`
 
+	// DisableCodexSearchModels turns off Codex -search virtual models and cached web_search injection.
+	DisableCodexSearchModels bool `yaml:"disable-codex-search-models" json:"disable-codex-search-models"`
+
 	// ForceModelPrefix requires explicit model prefixes (e.g., "teamA/gemini-3-pro-preview")
 	// to target prefixed credentials. When false, unprefixed model requests may use prefixed
 	// credentials as well.

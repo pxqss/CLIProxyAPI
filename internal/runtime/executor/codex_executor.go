@@ -14,6 +14,7 @@ import (
 	codexauth "github.com/router-for-me/CLIProxyAPI/v7/internal/auth/codex"
 	"github.com/router-for-me/CLIProxyAPI/v7/internal/config"
 	"github.com/router-for-me/CLIProxyAPI/v7/internal/misc"
+	"github.com/router-for-me/CLIProxyAPI/v7/internal/runtime/codexsearch"
 	"github.com/router-for-me/CLIProxyAPI/v7/internal/runtime/executor/helps"
 	"github.com/router-for-me/CLIProxyAPI/v7/internal/thinking"
 	"github.com/router-for-me/CLIProxyAPI/v7/internal/util"
@@ -147,7 +148,8 @@ func (e *CodexExecutor) Execute(ctx context.Context, auth *cliproxyauth.Auth, re
 	if opts.Alt == "responses/compact" {
 		return e.executeCompact(ctx, auth, req, opts)
 	}
-	baseModel := thinking.ParseSuffix(req.Model).ModelName
+	modelCaps := codexsearch.ParseModelCapabilities(req.Model)
+	baseModel := thinking.ParseSuffix(modelCaps.BaseModel).ModelName
 
 	apiKey, baseURL := codexCreds(auth)
 	if baseURL == "" {
@@ -182,6 +184,9 @@ func (e *CodexExecutor) Execute(ctx context.Context, auth *cliproxyauth.Auth, re
 	body, _ = sjson.DeleteBytes(body, "safety_identifier")
 	body, _ = sjson.DeleteBytes(body, "stream_options")
 	body = normalizeCodexInstructions(body)
+	if modelCaps.SearchEnabled && (e.cfg == nil || !e.cfg.DisableCodexSearchModels) {
+		body = codexsearch.InjectCachedWebSearch(body)
+	}
 	if e.cfg == nil || e.cfg.DisableImageGeneration == config.DisableImageGenerationOff {
 		body = ensureImageGenerationTool(body, baseModel, auth)
 	}
@@ -397,7 +402,8 @@ func (e *CodexExecutor) ExecuteStream(ctx context.Context, auth *cliproxyauth.Au
 	if opts.Alt == "responses/compact" {
 		return nil, statusErr{code: http.StatusBadRequest, msg: "streaming not supported for /responses/compact"}
 	}
-	baseModel := thinking.ParseSuffix(req.Model).ModelName
+	modelCaps := codexsearch.ParseModelCapabilities(req.Model)
+	baseModel := thinking.ParseSuffix(modelCaps.BaseModel).ModelName
 
 	apiKey, baseURL := codexCreds(auth)
 	if baseURL == "" {
@@ -431,6 +437,9 @@ func (e *CodexExecutor) ExecuteStream(ctx context.Context, auth *cliproxyauth.Au
 	body, _ = sjson.DeleteBytes(body, "stream_options")
 	body, _ = sjson.SetBytes(body, "model", baseModel)
 	body = normalizeCodexInstructions(body)
+	if modelCaps.SearchEnabled && (e.cfg == nil || !e.cfg.DisableCodexSearchModels) {
+		body = codexsearch.InjectCachedWebSearch(body)
+	}
 	if e.cfg == nil || e.cfg.DisableImageGeneration == config.DisableImageGenerationOff {
 		body = ensureImageGenerationTool(body, baseModel, auth)
 	}

@@ -6,24 +6,27 @@ English | [中文](README_CN.md) | [日本語](README_JA.md)
 
 This repository is a fork of CLIProxyAPI, not the official upstream release. The original project attribution, license, and upstream-related information are retained in the content below, organized based on the upstream README.
 
-This branch adds Gemini CLI `-search` virtual model support. When Gemini CLI models are available, `/v1/models` automatically exposes additional `-search` variants. Any client or gateway that can discover models from an OpenAI-compatible `/v1/models` endpoint can see these models without manual model entry creation.
+This branch adds Search Enhancements for supported providers. When Gemini CLI or Codex models are available, `/v1/models` automatically exposes additional provider-scoped `-search` variants. Any client or gateway that can discover models from an OpenAI-compatible `/v1/models` endpoint can see these models without manual model entry creation.
 
-When a client requests a model such as `gemini-xxx-search`, CPA restores the upstream model name to `gemini-xxx` and injects Gemini's built-in `googleSearch` tool declaration into the Gemini CLI / Code Assist upstream request body. Search execution is handled by the upstream Gemini / Code Assist service. CPA does not implement a local search tool loop, and `googleSearch` is not exposed as OpenAI `tool_calls`.
+Gemini CLI `-search` models restore `gemini-xxx-search` to `gemini-xxx` upstream and inject Gemini's built-in `googleSearch` tool declaration into the Gemini CLI / Code Assist request body. Codex `-search` models restore `gpt-xxx-search` to `gpt-xxx` upstream and inject cached hosted `web_search` as `{"type":"web_search","external_web_access":false}`. Search execution is handled by the upstream provider service. CPA does not implement a local search tool loop, does not expose `googleSearch` as OpenAI `tool_calls`, and does not disguise Codex `web_search` as a client function tool.
 
-This feature is enabled by default. To disable it:
+These features are enabled by default. To disable them per provider:
 
 ```yaml
 disable-gemini-search-models: true
+disable-codex-search-models: true
 ```
 
 Limitations:
 
-- Only the `gemini-cli` provider automatically generates `-search` model variants.
-- Claude, Codex, Qwen, OpenCode, Antigravity, and other providers do not generate `-search` variants.
-- Search behavior depends on whether the upstream Gemini / Code Assist service accepts the `googleSearch` tool declaration.
-- Real web search behavior must be verified after deployment with valid Gemini CLI authentication.
+- Gemini search only applies to the `gemini-cli` provider.
+- Codex search only applies to the Codex provider.
+- Other providers do not automatically generate `-search` variants.
+- Codex search is cached search in this first version, not live search.
+- Real search behavior depends on upstream service and account capabilities and must be verified after deployment.
+- In Chat Completions streaming, Codex search process events may not be displayed, but final text should keep the existing conversion behavior.
 
-See [Gemini CLI Search Models](docs/gemini-search-models.md) for detailed usage notes.
+See [Search Enhancements](docs/search-enhancements.md) for detailed usage notes.
 
 ---
 

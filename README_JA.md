@@ -6,7 +6,7 @@
 
 このリポジトリは CLIProxyAPI の fork であり、公式上流版ではありません。元プロジェクトの attribution、license、upstream 関連情報は、上流 README を基に整理した下記の内容に引き続き保持されています。
 
-このブランチでは、Gemini CLI の `-search` 仮想モデル機能を追加しています。Gemini CLI モデルが利用可能な場合、`/v1/models` は対応する `-search` バリアントを自動的に公開するため、NewAPI は CPA からこれらのモデルを手動追加なしで同期できます。
+このブランチでは、Gemini CLI の `-search` 仮想モデル機能を追加しています。Gemini CLI モデルが利用可能な場合、`/v1/models` は対応する `-search` バリアントを自動的に公開します。OpenAI-compatible `/v1/models` からモデル一覧を取得できる任意のクライアントやゲートウェイで、これらのモデルを発見でき、手動でモデルを追加する必要はありません。
 
 クライアントが `gemini-xxx-search` をリクエストすると、CPA は上流へ送信する前に実際のベースモデル名 `gemini-xxx` に戻し、Gemini CLI / Code Assist の上流リクエスト本文へ Gemini 組み込みの `googleSearch` ツール宣言を注入します。検索は上流の Gemini / Code Assist サービス側で実行されます。CPA はローカル search tool loop を実装せず、`googleSearch` を OpenAI `tool_calls` として公開しません。
 

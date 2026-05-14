@@ -6,7 +6,7 @@
 
 本仓库是 CLIProxyAPI 的 fork，并非官方上游版本。原项目 attribution、license 和 upstream 相关信息仍保留在下方基于上游 README 整理的内容中。
 
-本分支新增 Gemini CLI `-search` 虚拟模型能力。当 Gemini CLI 模型可用时，`/v1/models` 会自动额外暴露对应的 `-search` 变体，NewAPI 可以直接从 CPA 拉取这些模型，不需要手动新增 search 模型。
+本分支新增 Gemini CLI `-search` 虚拟模型能力。当 Gemini CLI 模型可用时，`/v1/models` 会自动额外暴露对应的 `-search` 变体。任何支持从 OpenAI-compatible `/v1/models` 拉取模型列表的客户端或网关都可以发现这些模型，无需手动新增模型。
 
 当客户端请求 `gemini-xxx-search` 时，CPA 会在发往上游前还原为真实基础模型名 `gemini-xxx`，并在 Gemini CLI / Code Assist 上游请求体中注入 Gemini 内置 `googleSearch` 工具声明。搜索由上游 Gemini / Code Assist 服务端执行；CPA 不实现本地 search tool loop，也不会把 `googleSearch` 暴露为 OpenAI `tool_calls`。
 

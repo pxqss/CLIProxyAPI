@@ -1,5 +1,34 @@
 # CLI 代理 API
 
+## Fork Notice / 分支说明
+
+本仓库是 CLIProxyAPI 的 fork，并非官方上游版本。原项目 attribution、license 和 upstream 相关信息仍保留在下方基于上游 README 整理的内容中。
+
+本分支新增 Gemini CLI `-search` 虚拟模型能力。当 Gemini CLI 模型可用时，`/v1/models` 会自动额外暴露对应的 `-search` 变体，NewAPI 可以直接从 CPA 拉取这些模型，不需要手动新增 search 模型。
+
+当客户端请求 `gemini-xxx-search` 时，CPA 会在发往上游前还原为真实基础模型名 `gemini-xxx`，并在 Gemini CLI / Code Assist 上游请求体中注入 Gemini 内置 `googleSearch` 工具声明。搜索由上游 Gemini / Code Assist 服务端执行；CPA 不实现本地 search tool loop，也不会把 `googleSearch` 暴露为 OpenAI `tool_calls`。
+
+该功能默认启用。如需关闭：
+
+```yaml
+disable-gemini-search-models: true
+```
+
+限制：
+
+- 仅 `gemini-cli` provider 会自动生成 `-search` 模型变体。
+- Claude、Codex、Qwen、OpenCode、Antigravity 等其他 provider 不会生成 `-search` 变体。
+- search 实际效果取决于上游 Gemini / Code Assist 是否接受 `googleSearch` 工具声明。
+- 真实联网搜索需要部署后使用有效 Gemini CLI auth 验证。
+
+详细说明见：[Gemini CLI Search 虚拟模型](docs/gemini-search-models_CN.md)。
+
+---
+
+## 以下为基于上游 CLIProxyAPI README 整理的说明
+
+以下内容基于 CLIProxyAPI 上游 README 整理，部分内容可能随 upstream 更新而变化。
+
 [English](README.md) | 中文 | [日本語](README_JA.md)
 
 一个为 CLI 提供 OpenAI/Gemini/Claude/Codex 兼容 API 接口的代理服务器。
@@ -7,38 +36,6 @@
 现已支持通过 OAuth 登录接入 OpenAI Codex（GPT 系列）和 Claude Code。
 
 您可以使用本地或多账户的CLI方式，通过任何与 OpenAI（包括Responses）/Gemini/Claude 兼容的客户端和SDK进行访问。
-
-## 赞助商
-
-[![https://www.packyapi.com/register?aff=cliproxyapi](./assets/packycode-cn.png)](https://www.packyapi.com/register?aff=cliproxyapi)
-
-感谢 PackyCode 对本项目的赞助！
-
-PackyCode 是一家可靠高效的 API 中转服务商，提供 Claude Code、Codex、Gemini 等多种服务的中转。
-
-PackyCode 为本软件用户提供了特别优惠：使用<a href="https://www.packyapi.com/register?aff=cliproxyapi" target="_blank">此链接</a>注册，并在充值时输入 "cliproxyapi" 优惠码即可享受九折优惠。
-
----
-
-<table>
-<tbody>
-<tr>
-<td width="180"><a href="https://www.aicodemirror.com/register?invitecode=TJNAIF"><img src="./assets/aicodemirror.png" alt="AICodeMirror" width="150"></a></td>
-<td>感谢 AICodeMirror 赞助了本项目！AICodeMirror 提供 Claude Code / Codex / Gemini CLI 官方高稳定中转服务，支持企业级高并发、极速开票、7×24 专属技术支持。 Claude Code / Codex / Gemini 官方渠道低至 3.8 / 0.2 / 0.9 折，充值更有折上折！AICodeMirror 为 CLIProxyAPI 的用户提供了特别福利，通过<a href="https://www.aicodemirror.com/register?invitecode=TJNAIF" target="_blank">此链接</a>注册的用户，可享受首充8折，企业客户最高可享 7.5 折！</td>
-</tr>
-<tr>
-<td width="180"><a href="https://shop.bmoplus.com/?utm_source=github"><img src="./assets/bmoplus.png" alt="BmoPlus" width="150"></a></td>
-<td>感谢 BmoPlus 赞助了本项目！BmoPlus 是一家专为AI订阅重度用户打造的可靠 AI 账号代充服务商，提供稳定的 ChatGPT Plus / ChatGPT Pro(全程质保) / Claude Pro / Super Grok / Gemini Pro 的官方代充&成品账号。 通过<a href="https://shop.bmoplus.com/?utm_source=github" target="_blank">BmoPlus AI成品号专卖/代充</a>注册下单的用户，可享GPT <b>官网订阅一折</b> 的震撼价格！</td>
-</tr>
-<tr>
-<td width="180"><a href="https://coder.visioncoder.cn"><img src="./assets/visioncoder.png" alt="VisionCoder" width="150"></a></td>
-<td>感谢 VisionCoder 对本项目的支持。<a href="https://coder.visioncoder.cn" target="_blank">VisionCoder 开发平台</a> 是一个可靠高效的 API 中继服务提供商，提供 Claude Code、Codex、Gemini 等主流 AI 模型，帮助开发者和团队更轻松地集成 AI 功能，提升工作效率。
-<p></p>
-VisionCoder 还为我们的用户提供 <a href="https://coder.visioncoder.cn" target="_blank">Token Plan</a> 限时活动：购买 1 个月，赠送 1 个月。</td>
-</tr>
-</tbody>
-</table>
-
 
 ## 功能特性
 
@@ -223,7 +220,7 @@ OmniRoute 是一个面向多供应商大语言模型的 AI 网关：它提供兼
 
 此项目根据 MIT 许可证授权 - 有关详细信息，请参阅 [LICENSE](LICENSE) 文件。
 
-## 写给所有中国网友的
+## 上游 CLIProxyAPI 社区
 
 QQ 群：188637136（满）、1081218164
 

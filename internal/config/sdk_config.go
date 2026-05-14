@@ -23,6 +23,9 @@ type SDKConfig struct {
 	// Default is false for safety; when false, /v1internal:* requests are rejected.
 	EnableGeminiCLIEndpoint bool `yaml:"enable-gemini-cli-endpoint" json:"enable-gemini-cli-endpoint"`
 
+	// DisableGeminiSearchModels turns off Gemini CLI -search virtual models and googleSearch injection.
+	DisableGeminiSearchModels bool `yaml:"disable-gemini-search-models" json:"disable-gemini-search-models"`
+
 	// ForceModelPrefix requires explicit model prefixes (e.g., "teamA/gemini-3-pro-preview")
 	// to target prefixed credentials. When false, unprefixed model requests may use prefixed
 	// credentials as well.

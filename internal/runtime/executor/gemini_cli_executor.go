@@ -20,6 +20,7 @@ import (
 	"github.com/router-for-me/CLIProxyAPI/v7/internal/misc"
 	"github.com/router-for-me/CLIProxyAPI/v7/internal/runtime/executor/helps"
 	"github.com/router-for-me/CLIProxyAPI/v7/internal/runtime/geminicli"
+	"github.com/router-for-me/CLIProxyAPI/v7/internal/runtime/geminisearch"
 	"github.com/router-for-me/CLIProxyAPI/v7/internal/thinking"
 	"github.com/router-for-me/CLIProxyAPI/v7/internal/util"
 	cliproxyauth "github.com/router-for-me/CLIProxyAPI/v7/sdk/cliproxy/auth"
@@ -111,7 +112,13 @@ func (e *GeminiCLIExecutor) Execute(ctx context.Context, auth *cliproxyauth.Auth
 	if opts.Alt == "responses/compact" {
 		return resp, statusErr{code: http.StatusNotImplemented, msg: "/responses/compact not supported"}
 	}
-	baseModel := thinking.ParseSuffix(req.Model).ModelName
+	modelCaps := geminisearch.ParseModelCapabilities(req.Model)
+	modelName := modelCaps.BaseModel
+	if e.cfg != nil && e.cfg.DisableGeminiSearchModels {
+		modelCaps.SearchEnabled = false
+		modelName = req.Model
+	}
+	baseModel := thinking.ParseSuffix(modelName).ModelName
 
 	tokenSource, baseTokenData, err := prepareGeminiCLITokenSource(ctx, e.cfg, auth)
 	if err != nil {
@@ -132,7 +139,7 @@ func (e *GeminiCLIExecutor) Execute(ctx context.Context, auth *cliproxyauth.Auth
 	originalTranslated := sdktranslator.TranslateRequest(from, to, baseModel, originalPayload, false)
 	basePayload := sdktranslator.TranslateRequest(from, to, baseModel, req.Payload, false)
 
-	basePayload, err = thinking.ApplyThinking(basePayload, req.Model, from.String(), to.String(), e.Identifier())
+	basePayload, err = thinking.ApplyThinking(basePayload, modelName, from.String(), to.String(), e.Identifier())
 	if err != nil {
 		return resp, err
 	}
@@ -147,6 +154,9 @@ func (e *GeminiCLIExecutor) Execute(ctx context.Context, auth *cliproxyauth.Auth
 		if a, _ := req.Metadata["action"].(string); a == "countTokens" {
 			action = "countTokens"
 		}
+	}
+	if modelCaps.SearchEnabled && action != "countTokens" {
+		basePayload = geminisearch.InjectGoogleSearch(basePayload)
 	}
 
 	projectID := resolveGeminiProjectID(auth)
@@ -267,7 +277,13 @@ func (e *GeminiCLIExecutor) ExecuteStream(ctx context.Context, auth *cliproxyaut
 	if opts.Alt == "responses/compact" {
 		return nil, statusErr{code: http.StatusNotImplemented, msg: "/responses/compact not supported"}
 	}
-	baseModel := thinking.ParseSuffix(req.Model).ModelName
+	modelCaps := geminisearch.ParseModelCapabilities(req.Model)
+	modelName := modelCaps.BaseModel
+	if e.cfg != nil && e.cfg.DisableGeminiSearchModels {
+		modelCaps.SearchEnabled = false
+		modelName = req.Model
+	}
+	baseModel := thinking.ParseSuffix(modelName).ModelName
 
 	tokenSource, baseTokenData, err := prepareGeminiCLITokenSource(ctx, e.cfg, auth)
 	if err != nil {
@@ -288,7 +304,7 @@ func (e *GeminiCLIExecutor) ExecuteStream(ctx context.Context, auth *cliproxyaut
 	originalTranslated := sdktranslator.TranslateRequest(from, to, baseModel, originalPayload, true)
 	basePayload := sdktranslator.TranslateRequest(from, to, baseModel, req.Payload, true)
 
-	basePayload, err = thinking.ApplyThinking(basePayload, req.Model, from.String(), to.String(), e.Identifier())
+	basePayload, err = thinking.ApplyThinking(basePayload, modelName, from.String(), to.String(), e.Identifier())
 	if err != nil {
 		return nil, err
 	}
@@ -297,6 +313,9 @@ func (e *GeminiCLIExecutor) ExecuteStream(ctx context.Context, auth *cliproxyaut
 	requestedModel := helps.PayloadRequestedModel(opts, req.Model)
 	requestPath := helps.PayloadRequestPath(opts)
 	basePayload = helps.ApplyPayloadConfigWithRoot(e.cfg, baseModel, "gemini", "request", basePayload, originalTranslated, requestedModel, requestPath)
+	if modelCaps.SearchEnabled {
+		basePayload = geminisearch.InjectGoogleSearch(basePayload)
+	}
 
 	projectID := resolveGeminiProjectID(auth)
 

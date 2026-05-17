@@ -40,8 +40,54 @@ jobs:
           git merge --ff-only upstream/main
           git push origin main
 
-      - name: Rebase feature branch on updated main
+      - name: Sync feature branch with main ignoring README files
+        shell: bash
         run: |
-          git checkout -B feature/search-enhancements origin/feature/search-enhancements
-          git rebase main
-          git push --force-with-lease origin feature/search-enhancements
+          set -euo pipefail
+          TARGET_BRANCH="feature/search-enhancements"
+          BASE_BRANCH="main"
+          IGNORED_READMES=("README.md" "README_CN.md" "README_JA.md")
+
+          git fetch origin "${BASE_BRANCH}" "${TARGET_BRANCH}"
+          git checkout -B "${TARGET_BRANCH}" "origin/${TARGET_BRANCH}"
+          before_sync="$(git rev-parse HEAD)"
+
+          set +e
+          git merge --no-ff --no-commit "origin/${BASE_BRANCH}"
+          merge_code=$?
+          set -e
+
+          if [ "${merge_code}" -ne 0 ]; then
+            conflicts="$(git diff --name-only --diff-filter=U || true)"
+            non_readme_conflicts="$(
+              printf '%s\n' "${conflicts}" \
+                | grep -Ev '^(README|README_CN|README_JA)\.md$' \
+                || true
+            )"
+            if [ -n "${non_readme_conflicts}" ]; then
+              echo "::error::Non-README merge conflicts found:"
+              echo "${non_readme_conflicts}"
+              git merge --abort || true
+              exit 1
+            fi
+            echo "Only README conflicts found. Restoring README files from ${TARGET_BRANCH} before sync."
+          fi
+
+          for file in "${IGNORED_READMES[@]}"; do
+            if git cat-file -e "${before_sync}:${file}" 2>/dev/null; then
+              git checkout "${before_sync}" -- "${file}"
+              git add "${file}"
+            else
+              git rm -f --ignore-unmatch "${file}"
+            fi
+          done
+
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No non-README changes to sync."
+            git merge --abort 2>/dev/null || true
+            exit 0
+          fi
+
+          git commit -m "chore: sync main into ${TARGET_BRANCH}"
+          git push origin "${TARGET_BRANCH}"

@@ -23,37 +23,26 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Configure git author
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-      - name: Add upstream remote
-        run: |
-          git remote add upstream https://github.com/router-for-me/CLIProxyAPI.git || true
-          git fetch origin --prune
-          git fetch upstream --prune
-
-      - name: Fast-forward main from upstream
-        run: |
-          git checkout -B main origin/main
-          git merge --ff-only upstream/main
-          git push origin main
-
-      - name: Sync feature branch with main ignoring README files
+      - name: Sync feature branch from upstream main ignoring README files
         shell: bash
         run: |
           set -euo pipefail
           TARGET_BRANCH="feature/search-enhancements"
           BASE_BRANCH="main"
+          UPSTREAM_REPO="https://github.com/router-for-me/CLIProxyAPI.git"
           IGNORED_READMES=("README.md" "README_CN.md" "README_JA.md")
 
-          git fetch origin "${BASE_BRANCH}" "${TARGET_BRANCH}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git remote remove upstream 2>/dev/null || true
+          git remote add upstream "${UPSTREAM_REPO}"
+          git fetch --prune origin "${TARGET_BRANCH}"
+          git fetch --prune upstream "${BASE_BRANCH}"
           git checkout -B "${TARGET_BRANCH}" "origin/${TARGET_BRANCH}"
           before_sync="$(git rev-parse HEAD)"
 
           set +e
-          git merge --no-ff --no-commit "origin/${BASE_BRANCH}"
+          git merge --no-ff --no-commit "upstream/${BASE_BRANCH}"
           merge_code=$?
           set -e
 
@@ -75,19 +64,27 @@ jobs:
 
           for file in "${IGNORED_READMES[@]}"; do
             if git cat-file -e "${before_sync}:${file}" 2>/dev/null; then
-              git checkout "${before_sync}" -- "${file}"
+              git restore --source="${before_sync}" --staged --worktree -- "${file}"
               git add "${file}"
             else
-              git rm -f --ignore-unmatch "${file}"
+              git rm -f --ignore-unmatch -- "${file}"
             fi
           done
 
+          remaining_conflicts="$(git diff --name-only --diff-filter=U || true)"
+          if [ -n "${remaining_conflicts}" ]; then
+            echo "::error::Unresolved conflicts remain:"
+            echo "${remaining_conflicts}"
+            git merge --abort || true
+            exit 1
+          fi
+
           git add -A
           if git diff --cached --quiet; then
-            echo "No non-README changes to sync."
+            echo "No non-README upstream changes to sync."
             git merge --abort 2>/dev/null || true
             exit 0
           fi
 
-          git commit -m "chore: sync main into ${TARGET_BRANCH}"
+          git commit -m "chore: sync upstream main into ${TARGET_BRANCH}"
           git push origin "${TARGET_BRANCH}"

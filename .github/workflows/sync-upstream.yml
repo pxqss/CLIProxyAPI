@@ -23,6 +23,18 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Sync main with upstream main
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE_BRANCH="main"
+          UPSTREAM_REPO="https://github.com/router-for-me/CLIProxyAPI.git"
+
+          git remote remove upstream 2>/dev/null || true
+          git remote add upstream "${UPSTREAM_REPO}"
+          git fetch --prune upstream "${BASE_BRANCH}"
+          git push --force-with-lease origin "upstream/${BASE_BRANCH}:${BASE_BRANCH}"
+
       - name: Sync feature branch from upstream main ignoring README files
         shell: bash
         run: |

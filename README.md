@@ -6,20 +6,18 @@ English | [中文](README_CN.md) | [日本語](README_JA.md)
 
 This repository is a fork of CLIProxyAPI, not the official upstream release. The original project attribution, license, and upstream-related information are retained in the content below, organized based on the upstream README.
 
-This branch adds Search Enhancements for supported providers. When Gemini CLI or Codex models are available, `/v1/models` automatically exposes additional provider-scoped `-search` variants. Any client or gateway that can discover models from an OpenAI-compatible `/v1/models` endpoint can see these models without manual model entry creation.
+This branch adds Codex Search Enhancements. When Codex models are available, `/v1/models` automatically exposes additional Codex `-search` variants. Any client or gateway that can discover models from an OpenAI-compatible `/v1/models` endpoint can see these models without manual model entry creation.
 
-Gemini CLI `-search` models restore `gemini-xxx-search` to `gemini-xxx` upstream and inject Gemini's built-in `googleSearch` tool declaration into the Gemini CLI / Code Assist request body. Codex `-search` models restore `gpt-xxx-search` to `gpt-xxx` upstream and inject cached hosted `web_search` as `{"type":"web_search","external_web_access":false}`. Search execution is handled by the upstream provider service. CPA does not implement a local search tool loop, does not expose `googleSearch` as OpenAI `tool_calls`, and does not disguise Codex `web_search` as a client function tool.
+Codex `-search` models restore `gpt-xxx-search` to `gpt-xxx` upstream and inject cached hosted `web_search` as `{"type":"web_search","external_web_access":false}`. Search execution is handled by the upstream Codex / Responses service. CPA does not implement a local search tool loop and does not disguise Codex `web_search` as a client function tool.
 
-These features are enabled by default. To disable them per provider:
+This feature is enabled by default. To disable Codex search virtual models:
 
 ```yaml
-disable-gemini-search-models: true
 disable-codex-search-models: true
 ```
 
 Limitations:
 
-- Gemini search only applies to the `gemini-cli` provider.
 - Codex search only applies to the Codex provider.
 - Other providers do not automatically generate `-search` variants.
 - Codex search is cached search in this first version, not live search.

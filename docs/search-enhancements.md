@@ -1,50 +1,27 @@
-# Search Enhancements
+# Codex Search Enhancements
 
-This document describes the provider-scoped `-search` virtual model features in this fork.
+This document describes the Codex-only `-search` virtual model feature in this fork.
 
-## Feature overview
+## Feature Overview
 
-This branch supports two search enhancement paths:
+This branch supports Codex `-search` virtual models. CPA injects the cached Codex hosted `web_search` tool into upstream Codex / Responses requests.
 
-- Gemini CLI `-search` virtual models inject Gemini's built-in `googleSearch` tool declaration.
-- Codex `-search` virtual models inject cached Codex hosted `web_search`.
+Gemini CLI / GCLI search is no longer supported. The upstream project removed the Gemini CLI OAuth path, so this fork no longer exposes Gemini `-search` virtual models.
 
-## Model list behavior
+## Model List Behavior
 
-When supported provider models are available, CPA automatically exposes both the base model and the corresponding `-search` variant through the OpenAI-compatible `/v1/models` endpoint. Plain base models remain available.
+When Codex models are available, CPA automatically exposes both the base model and the corresponding `-search` variant through the OpenAI-compatible `/v1/models` endpoint. Plain base models remain available.
 
 Example:
 
 ```text
-gemini-3-pro-preview
-gemini-3-pro-preview-search
 gpt-5-codex
 gpt-5-codex-search
 ```
 
 Any client or gateway that discovers models from an OpenAI-compatible `/v1/models` endpoint can see these virtual models automatically, without manual model entry creation.
 
-## Gemini CLI search behavior
-
-When a client requests a model such as:
-
-```text
-gemini-xxx-search
-```
-
-CPA sends the request upstream as the real base model:
-
-```text
-gemini-xxx
-```
-
-Before sending the Gemini CLI / Code Assist upstream request, CPA injects Gemini's built-in `googleSearch` tool declaration into the upstream request body.
-
-Search is executed by the upstream Gemini / Code Assist service. CPA does not implement a local search tool loop and does not expose `googleSearch` as OpenAI `tool_calls`.
-
-If the request already contains `googleSearch`, CPA does not inject a duplicate declaration. User-provided function tools are preserved.
-
-## Codex search behavior
+## Codex Search Behavior
 
 When a client requests a model such as:
 
@@ -70,13 +47,7 @@ Existing function tools, `image_generation` tools, and other built-in tools are 
 
 ## Configuration
 
-Search enhancements are enabled by default.
-
-To disable Gemini CLI `-search` model exposure and `googleSearch` injection:
-
-```yaml
-disable-gemini-search-models: true
-```
+Codex search enhancements are enabled by default.
 
 To disable Codex `-search` model exposure and cached `web_search` injection:
 
@@ -84,22 +55,21 @@ To disable Codex `-search` model exposure and cached `web_search` injection:
 disable-codex-search-models: true
 ```
 
-When disabled, CPA keeps normal provider model behavior and does not treat `-search` as a virtual search suffix for that provider.
+When disabled, CPA keeps normal Codex model behavior and does not treat `-search` as a virtual search suffix for Codex.
 
-## Scope and limitations
+## Scope And Limitations
 
-- Gemini search only applies to the `gemini-cli` provider.
 - Codex search only applies to the Codex provider.
-- Other providers do not automatically generate `-search` variants.
+- Gemini CLI / GCLI OAuth search is not supported.
+- Gemini, Claude, Qwen, OpenCode, Antigravity, and other providers do not automatically generate Codex `-search` variants.
 - Codex search is cached search in this first version, not live search.
 - Real search behavior depends on upstream service and account capabilities and must be validated after deployment.
 - In Chat Completions streaming, Codex search process events may not be displayed, but final text should keep the existing conversion behavior.
 - Responses passthrough is lower risk because Responses events are mostly forwarded as-is.
 
-## Suggested validation
+## Suggested Validation
 
-1. Call `GET /v1/models` and confirm supported providers expose `-search` variants while base models remain.
-2. Compare plain models with `-search` models.
-3. For Gemini, ask a weather or news question using `gemini-xxx-search`.
-4. For Codex, ask a weather or news question using `gpt-xxx-search` and request sources.
-5. Confirm plain models do not inject search tools.
+1. Call `GET /v1/models` and confirm Codex exposes `-search` variants while base models remain.
+2. Compare a plain Codex model with its `-search` variant.
+3. Ask a weather or news question using `gpt-xxx-search` and request sources.
+4. Confirm plain Codex models do not inject `web_search`.

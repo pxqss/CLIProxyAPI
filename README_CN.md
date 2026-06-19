@@ -6,20 +6,18 @@
 
 本仓库是 CLIProxyAPI 的 fork，并非官方上游版本。原项目 attribution、license 和 upstream 相关信息仍保留在下方基于上游 README 整理的内容中。
 
-本分支新增 Search Enhancements / 搜索增强能力。当 Gemini CLI 或 Codex 模型可用时，`/v1/models` 会自动额外暴露按 provider 生效的 `-search` 变体。任何支持从 OpenAI-compatible `/v1/models` 拉取模型列表的客户端或网关都可以发现这些模型，无需手动新增模型。
+本分支新增 Codex Search Enhancements / Codex 搜索增强能力。当 Codex 模型可用时，`/v1/models` 会自动额外暴露 Codex `-search` 变体。任何支持从 OpenAI-compatible `/v1/models` 拉取模型列表的客户端或网关都可以发现这些模型，无需手动新增模型。
 
-Gemini CLI `-search` 模型会在发往上游前将 `gemini-xxx-search` 还原为 `gemini-xxx`，并在 Gemini CLI / Code Assist 请求体中注入 Gemini 内置 `googleSearch` 工具声明。Codex `-search` 模型会在发往上游前将 `gpt-xxx-search` 还原为 `gpt-xxx`，并注入 cached hosted `web_search`：`{"type":"web_search","external_web_access":false}`。搜索由上游 provider 服务端执行；CPA 不实现本地 search tool loop，不会把 `googleSearch` 暴露为 OpenAI `tool_calls`，也不会把 Codex `web_search` 伪装成客户端 function tool。
+Codex `-search` 模型会在发往上游前将 `gpt-xxx-search` 还原为 `gpt-xxx`，并注入 cached hosted `web_search`：`{"type":"web_search","external_web_access":false}`。搜索由上游 Codex / Responses 服务端执行；CPA 不实现本地 search tool loop，也不会把 Codex `web_search` 伪装成客户端 function tool。
 
-这些功能默认启用。如需按 provider 关闭：
+该功能默认启用。如需关闭 Codex search 虚拟模型：
 
 ```yaml
-disable-gemini-search-models: true
 disable-codex-search-models: true
 ```
 
 限制：
 
-- Gemini search 仅 `gemini-cli` provider 生效。
 - Codex search 仅 Codex provider 生效。
 - 其他 provider 不会自动生成 `-search` 变体。
 - Codex 第一版是 cached search，不是 live search。

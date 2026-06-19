@@ -15,7 +15,6 @@ import (
 	"github.com/router-for-me/CLIProxyAPI/v7/internal/config"
 	"github.com/router-for-me/CLIProxyAPI/v7/internal/registry"
 	"github.com/router-for-me/CLIProxyAPI/v7/internal/runtime/executor/helps"
-	"github.com/router-for-me/CLIProxyAPI/v7/internal/runtime/geminisearch"
 	"github.com/router-for-me/CLIProxyAPI/v7/internal/thinking"
 	"github.com/router-for-me/CLIProxyAPI/v7/internal/util"
 	cliproxyauth "github.com/router-for-me/CLIProxyAPI/v7/sdk/cliproxy/auth"
@@ -105,12 +104,7 @@ func (e *GeminiExecutor) Execute(ctx context.Context, auth *cliproxyauth.Auth, r
 	if opts.Alt == "responses/compact" {
 		return resp, statusErr{code: http.StatusNotImplemented, msg: "/responses/compact not supported"}
 	}
-	modelCaps := geminisearch.ParseModelCapabilities(req.Model)
-	modelName := modelCaps.BaseModel
-	if e.cfg != nil && e.cfg.DisableGeminiSearchModels {
-		modelCaps.SearchEnabled = false
-		modelName = req.Model
-	}
+	modelName := req.Model
 	baseModel := thinking.ParseSuffix(modelName).ModelName
 
 	apiKey := geminiAPIKey(auth)
@@ -154,9 +148,6 @@ func (e *GeminiExecutor) Execute(ctx context.Context, auth *cliproxyauth.Auth, r
 		url = url + fmt.Sprintf("?$alt=%s", opts.Alt)
 	}
 
-	if modelCaps.SearchEnabled && action != "countTokens" {
-		body = geminisearch.InjectGoogleSearch(body)
-	}
 	body, _ = sjson.DeleteBytes(body, "session_id")
 	reporter.SetTranslatedReasoningEffort(body, to.String())
 
@@ -225,12 +216,7 @@ func (e *GeminiExecutor) ExecuteStream(ctx context.Context, auth *cliproxyauth.A
 	if opts.Alt == "responses/compact" {
 		return nil, statusErr{code: http.StatusNotImplemented, msg: "/responses/compact not supported"}
 	}
-	modelCaps := geminisearch.ParseModelCapabilities(req.Model)
-	modelName := modelCaps.BaseModel
-	if e.cfg != nil && e.cfg.DisableGeminiSearchModels {
-		modelCaps.SearchEnabled = false
-		modelName = req.Model
-	}
+	modelName := req.Model
 	baseModel := thinking.ParseSuffix(modelName).ModelName
 
 	apiKey := geminiAPIKey(auth)
@@ -269,9 +255,6 @@ func (e *GeminiExecutor) ExecuteStream(ctx context.Context, auth *cliproxyauth.A
 		url = url + fmt.Sprintf("?$alt=%s", opts.Alt)
 	}
 
-	if modelCaps.SearchEnabled {
-		body = geminisearch.InjectGoogleSearch(body)
-	}
 	body, _ = sjson.DeleteBytes(body, "session_id")
 	reporter.SetTranslatedReasoningEffort(body, to.String())
 
@@ -373,10 +356,7 @@ func (e *GeminiExecutor) ExecuteStream(ctx context.Context, auth *cliproxyauth.A
 
 // CountTokens counts tokens for the given request using the Gemini API.
 func (e *GeminiExecutor) CountTokens(ctx context.Context, auth *cliproxyauth.Auth, req cliproxyexecutor.Request, opts cliproxyexecutor.Options) (cliproxyexecutor.Response, error) {
-	modelName := geminisearch.ParseModelCapabilities(req.Model).BaseModel
-	if e.cfg != nil && e.cfg.DisableGeminiSearchModels {
-		modelName = req.Model
-	}
+	modelName := req.Model
 	baseModel := thinking.ParseSuffix(modelName).ModelName
 
 	apiKey := geminiAPIKey(auth)

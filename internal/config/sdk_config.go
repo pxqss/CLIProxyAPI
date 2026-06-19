@@ -34,9 +34,6 @@ type SDKConfig struct {
 	// Empty or invalid values use the default 3h.
 	VideoResultAuthCacheTTL string `yaml:"video-result-auth-cache-ttl,omitempty" json:"video-result-auth-cache-ttl,omitempty"`
 
-	// DisableGeminiSearchModels turns off Gemini -search virtual models and googleSearch injection.
-	DisableGeminiSearchModels bool `yaml:"disable-gemini-search-models" json:"disable-gemini-search-models"`
-
 	// DisableCodexSearchModels turns off Codex -search virtual models and cached web_search injection.
 	DisableCodexSearchModels bool `yaml:"disable-codex-search-models" json:"disable-codex-search-models"`
 

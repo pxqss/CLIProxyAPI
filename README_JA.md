@@ -6,20 +6,18 @@
 
 このリポジトリは CLIProxyAPI の fork であり、公式上流版ではありません。元プロジェクトの attribution、license、upstream 関連情報は、上流 README を基に整理した下記の内容に引き続き保持されています。
 
-このブランチでは Search Enhancements / 検索拡張を追加しています。Gemini CLI または Codex モデルが利用可能な場合、`/v1/models` は provider-scoped な `-search` バリアントを自動的に公開します。OpenAI-compatible `/v1/models` からモデル一覧を取得できる任意のクライアントやゲートウェイで、これらのモデルを発見でき、手動でモデルを追加する必要はありません。
+このブランチでは Codex Search Enhancements / Codex 検索拡張を追加しています。Codex モデルが利用可能な場合、`/v1/models` は Codex `-search` バリアントを自動的に公開します。OpenAI-compatible `/v1/models` からモデル一覧を取得できる任意のクライアントやゲートウェイで、これらのモデルを発見でき、手動でモデルを追加する必要はありません。
 
-Gemini CLI `-search` モデルでは、`gemini-xxx-search` を上流送信前に `gemini-xxx` へ戻し、Gemini CLI / Code Assist リクエスト本文へ Gemini 組み込みの `googleSearch` ツール宣言を注入します。Codex `-search` モデルでは、`gpt-xxx-search` を上流送信前に `gpt-xxx` へ戻し、cached hosted `web_search` として `{"type":"web_search","external_web_access":false}` を注入します。検索は上流 provider サービス側で実行されます。CPA はローカル search tool loop を実装せず、`googleSearch` を OpenAI `tool_calls` として公開せず、Codex `web_search` をクライアント function tool に偽装しません。
+Codex `-search` モデルでは、`gpt-xxx-search` を上流送信前に `gpt-xxx` へ戻し、cached hosted `web_search` として `{"type":"web_search","external_web_access":false}` を注入します。検索は上流 Codex / Responses サービス側で実行されます。CPA はローカル search tool loop を実装せず、Codex `web_search` をクライアント function tool に偽装しません。
 
-これらの機能はデフォルトで有効です。provider ごとに無効化するには次を設定してください。
+この機能はデフォルトで有効です。Codex search 仮想モデルを無効化するには次を設定してください。
 
 ```yaml
-disable-gemini-search-models: true
 disable-codex-search-models: true
 ```
 
 制限事項:
 
-- Gemini search は `gemini-cli` provider のみに適用されます。
 - Codex search は Codex provider のみに適用されます。
 - その他の provider では `-search` バリアントを自動生成しません。
 - Codex search の初回版は cached search であり、live search ではありません。

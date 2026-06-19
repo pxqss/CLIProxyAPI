@@ -4,8 +4,8 @@ import "testing"
 
 func TestAppendGeminiSearchModels(t *testing.T) {
 	models := []*ModelInfo{
-		{ID: "gemini-3-pro-preview", Object: "model", OwnedBy: "google", Type: "gemini-cli", DisplayName: "gemini-3-pro-preview"},
-		{ID: "gemini-3-flash-preview", Object: "model", OwnedBy: "google", Type: "gemini-cli"},
+		{ID: "gemini-3-pro-preview", Object: "model", OwnedBy: "google", Type: "gemini", DisplayName: "gemini-3-pro-preview"},
+		{ID: "gemini-3-flash-preview", Object: "model", OwnedBy: "google", Type: "gemini"},
 	}
 	out := appendGeminiSearchModels(models)
 	ids := map[string]bool{}
@@ -23,7 +23,7 @@ func TestAppendGeminiSearchModelsIsProviderScopedByCaller(t *testing.T) {
 	models := []*ModelInfo{{ID: "claude-sonnet-4-6", Object: "model", OwnedBy: "anthropic", Type: "claude"}}
 	var out []*ModelInfo
 	provider := "claude"
-	if provider == "gemini-cli" {
+	if provider == "gemini" {
 		out = appendGeminiSearchModels(models)
 	} else {
 		out = models
@@ -33,6 +33,6 @@ func TestAppendGeminiSearchModelsIsProviderScopedByCaller(t *testing.T) {
 		ids[model.ID] = true
 	}
 	if ids["claude-sonnet-4-6-search"] {
-		t.Fatalf("non gemini-cli provider produced search variant")
+		t.Fatalf("non gemini provider produced search variant")
 	}
 }

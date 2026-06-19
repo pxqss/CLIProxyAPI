@@ -21,8 +21,9 @@ type SDKConfig struct {
 	//     sent it and do not inject it otherwise; on /v1/images/generations and /v1/images/edits behave like "chat".
 	DisableImageGeneration DisableImageGenerationMode `yaml:"disable-image-generation" json:"disable-image-generation"`
 
-	// GPTImage2BaseModel sets the base (mainline) model used when proxying GPT Image 2
-	// requests via the hosted image_generation tool (e.g. Codex OAuth /v1/images/*).
+	// GPTImage2BaseModel sets the base (mainline) model used by the legacy hosted
+	// image_generation tool path when a Codex image request is not proxied directly
+	// through the Image API.
 	//
 	// The value must start with "gpt-" (case-insensitive). If empty or invalid, the
 	// default base model ("gpt-5.4-mini") is used.
@@ -33,11 +34,7 @@ type SDKConfig struct {
 	// Empty or invalid values use the default 3h.
 	VideoResultAuthCacheTTL string `yaml:"video-result-auth-cache-ttl,omitempty" json:"video-result-auth-cache-ttl,omitempty"`
 
-	// EnableGeminiCLIEndpoint controls whether Gemini CLI internal endpoints (/v1internal:*) are enabled.
-	// Default is false for safety; when false, /v1internal:* requests are rejected.
-	EnableGeminiCLIEndpoint bool `yaml:"enable-gemini-cli-endpoint" json:"enable-gemini-cli-endpoint"`
-
-	// DisableGeminiSearchModels turns off Gemini CLI -search virtual models and googleSearch injection.
+	// DisableGeminiSearchModels turns off Gemini -search virtual models and googleSearch injection.
 	DisableGeminiSearchModels bool `yaml:"disable-gemini-search-models" json:"disable-gemini-search-models"`
 
 	// DisableCodexSearchModels turns off Codex -search virtual models and cached web_search injection.

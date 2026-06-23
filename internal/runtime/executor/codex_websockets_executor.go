@@ -434,6 +434,7 @@ func (e *CodexWebsocketsExecutor) ExecuteStream(ctx context.Context, auth *clipr
 	requestedModel := helps.PayloadRequestedModel(opts, req.Model)
 	requestPath := helps.PayloadRequestPath(opts)
 	body = helps.ApplyPayloadConfigWithRequest(e.cfg, baseModel, to.String(), from.String(), "", body, body, requestedModel, requestPath, opts.Headers)
+	body, _ = sjson.SetBytes(body, "model", baseModel)
 	body = normalizeCodexInstructions(body)
 	if modelCaps.SearchEnabled && (e.cfg == nil || !e.cfg.DisableCodexSearchModels) {
 		body = codexsearch.InjectCachedWebSearch(body)
@@ -878,7 +879,7 @@ func applyCodexPromptCacheHeadersWithContext(ctx context.Context, from sdktransl
 
 	var cache helps.CodexCache
 	if sourceFormatEqual(from, sdktranslator.FormatClaude) {
-		cached, ok, errCache := codexClaudeCodePromptCache(ctx, req)
+		cached, ok, errCache := helps.ClaudeCodePromptCache(ctx, req.Model, req.Payload, nil)
 		if errCache != nil {
 			return nil, nil, errCache
 		}
